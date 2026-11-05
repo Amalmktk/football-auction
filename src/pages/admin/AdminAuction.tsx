@@ -117,11 +117,7 @@ export default function AdminAuction() {
                 <Avatar name={player.name} url={player.photo_url} size={112} />
                 <div className="min-w-0 flex-1">
                   <div className="text-3xl font-bold">{player.name}</div>
-                  <div className="mt-1 text-slate-400">
-                    {[player.position, player.rating && `Rating ${player.rating}`, player.category && `Cat ${player.category}`, player.department]
-                      .filter(Boolean)
-                      .join(' · ')}
-                  </div>
+                  {player.position && <div className="mt-1 text-slate-400">{player.position}</div>}
                   <div className="mt-1 text-sm text-slate-500">Base price {fmt(player.base_price)}</div>
                 </div>
                 <div className="text-right">

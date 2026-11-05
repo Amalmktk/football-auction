@@ -20,24 +20,16 @@ interface PlayerDraft {
   id?: string
   is_captain: boolean
   name: string
-  department: string
   position: Position | ''
-  rating: string
-  category: string
   base_price: string
-  auction_order: string
   photo_url: string | null
 }
 
 const emptyDraft: PlayerDraft = {
   is_captain: false,
   name: '',
-  department: '',
   position: '',
-  rating: '',
-  category: '',
   base_price: String(DEFAULT_BASE_PRICE),
-  auction_order: '',
   photo_url: null,
 }
 
@@ -46,18 +38,14 @@ function toDraft(p: Player): PlayerDraft {
     id: p.id,
     is_captain: p.is_captain,
     name: p.name,
-    department: p.department ?? '',
     position: p.position ?? '',
-    rating: p.rating?.toString() ?? '',
-    category: p.category ?? '',
     base_price: p.base_price.toString(),
-    auction_order: p.auction_order?.toString() ?? '',
     photo_url: p.photo_url,
   }
 }
 
 export default function AdminPlayers() {
-  const { rows: players, error: loadError } = useTable<Player>('players', 'auction_order')
+  const { rows: players, error: loadError } = useTable<Player>('players', 'name')
   const { rows: teams } = useTable<Team>('teams', 'name')
   const [filter, setFilter] = useState<Filter>('all')
   const [search, setSearch] = useState('')
@@ -77,7 +65,7 @@ export default function AdminPlayers() {
   const visible = players.filter(
     (p) =>
       (filter === 'all' || p.status === filter) &&
-      (!search || `${p.name} ${p.department ?? ''}`.toLowerCase().includes(search.toLowerCase())),
+      (!search || p.name.toLowerCase().includes(search.toLowerCase())),
   )
 
   async function onCsvChosen(file: File | undefined) {
@@ -149,7 +137,7 @@ export default function AdminPlayers() {
           </button>
         ))}
         <Input
-          placeholder="Search name or department"
+          placeholder="Search by name"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="ml-auto max-w-xs"
@@ -160,14 +148,11 @@ export default function AdminPlayers() {
         <p className="text-slate-400">No players yet. Add them one by one or import a CSV.</p>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-slate-800">
-          <table className="w-full min-w-[800px] text-left text-sm">
+          <table className="w-full min-w-[640px] text-left text-sm">
             <thead className="bg-slate-900 text-slate-400">
               <tr>
-                <th className="px-3 py-2">#</th>
                 <th className="px-3 py-2">Player</th>
                 <th className="px-3 py-2">Pos</th>
-                <th className="px-3 py-2">Rating</th>
-                <th className="px-3 py-2">Cat</th>
                 <th className="px-3 py-2">Base</th>
                 <th className="px-3 py-2">Status</th>
                 <th className="px-3 py-2">Team / price</th>
@@ -179,24 +164,18 @@ export default function AdminPlayers() {
                 const team = p.team_id ? teamById.get(p.team_id) : undefined
                 return (
                   <tr key={p.id} className="hover:bg-slate-900/60">
-                    <td className="px-3 py-2 text-slate-500">{p.auction_order ?? '—'}</td>
                     <td className="px-3 py-2">
                       <div className="flex items-center gap-3">
                         <Avatar name={p.name} url={p.photo_url} size={32} />
-                        <div>
-                          <div className="font-medium">
-                            {p.name}
-                            {p.is_captain && (
-                              <span className="ml-2 rounded bg-sky-900 px-1.5 py-0.5 text-xs text-sky-200">Captain</span>
-                            )}
-                          </div>
-                          {p.department && <div className="text-xs text-slate-500">{p.department}</div>}
+                        <div className="font-medium">
+                          {p.name}
+                          {p.is_captain && (
+                            <span className="ml-2 rounded bg-sky-900 px-1.5 py-0.5 text-xs text-sky-200">Captain</span>
+                          )}
                         </div>
                       </div>
                     </td>
                     <td className="px-3 py-2">{p.position ?? '—'}</td>
-                    <td className="px-3 py-2">{p.rating ?? '—'}</td>
-                    <td className="px-3 py-2">{p.category ?? '—'}</td>
                     <td className="px-3 py-2">{p.is_captain ? '—' : p.base_price}</td>
                     <td className="px-3 py-2">
                       <span className={`rounded px-2 py-0.5 text-xs ${statusStyles[p.status]}`}>
@@ -233,13 +212,7 @@ export default function AdminPlayers() {
       )}
 
       {editing && <PlayerForm draft={editing} onClose={() => setEditing(null)} />}
-      {importing && (
-        <ImportModal
-          parsed={importing}
-          nextOrder={Math.max(0, ...players.map((p) => p.auction_order ?? 0)) + 1}
-          onClose={() => setImporting(null)}
-        />
-      )}
+      {importing && <ImportModal parsed={importing} onClose={() => setImporting(null)} />}
     </div>
   )
 }
@@ -258,19 +231,10 @@ function PlayerForm({ draft: initial, onClose }: { draft: PlayerDraft; onClose: 
     try {
       const photo_url = photoFile ? await uploadPhoto(photoFile, 'players') : draft.photo_url
       const fields = {
-        department: draft.department.trim() || null,
         position: draft.position || null,
-        rating: draft.rating ? Number(draft.rating) : null,
-        category: draft.category.trim().toUpperCase() || null,
         photo_url,
-        // name, base price and order don't apply to captains (name is managed on the Teams page)
-        ...(draft.is_captain
-          ? {}
-          : {
-              name: draft.name.trim(),
-              base_price: Number(draft.base_price),
-              auction_order: draft.auction_order ? Number(draft.auction_order) : null,
-            }),
+        // name and base price don't apply to captains (name is managed on the Teams page)
+        ...(draft.is_captain ? {} : { name: draft.name.trim(), base_price: Number(draft.base_price) }),
       }
       const { error } = draft.id
         ? await supabase.from('players').update(fields).eq('id', draft.id)
@@ -292,9 +256,6 @@ function PlayerForm({ draft: initial, onClose }: { draft: PlayerDraft; onClose: 
               <Input required disabled={draft.is_captain} value={draft.name} onChange={(e) => set({ name: e.target.value })} />
             </Field>
           </div>
-          <Field label="Department">
-            <Input value={draft.department} onChange={(e) => set({ department: e.target.value })} />
-          </Field>
           <Field label="Position">
             <Select value={draft.position} onChange={(e) => set({ position: e.target.value as Position | '' })}>
               <option value="">—</option>
@@ -305,27 +266,16 @@ function PlayerForm({ draft: initial, onClose }: { draft: PlayerDraft; onClose: 
               ))}
             </Select>
           </Field>
-          <Field label="Skill rating (1–10)">
-            <Input type="number" min={1} max={10} value={draft.rating} onChange={(e) => set({ rating: e.target.value })} />
-          </Field>
-          <Field label="Category" hint="e.g. A for star players">
-            <Input maxLength={4} value={draft.category} onChange={(e) => set({ category: e.target.value })} />
-          </Field>
           {!draft.is_captain && (
-            <>
-              <Field label="Base price">
-                <Input
-                  required
-                  type="number"
-                  min={1}
-                  value={draft.base_price}
-                  onChange={(e) => set({ base_price: e.target.value })}
-                />
-              </Field>
-              <Field label="Auction order" hint="Used when player order is Manual.">
-                <Input type="number" value={draft.auction_order} onChange={(e) => set({ auction_order: e.target.value })} />
-              </Field>
-            </>
+            <Field label="Base price">
+              <Input
+                required
+                type="number"
+                min={1}
+                value={draft.base_price}
+                onChange={(e) => set({ base_price: e.target.value })}
+              />
+            </Field>
           )}
         </div>
         <Field label="Photo (optional)">
@@ -364,17 +314,14 @@ function PlayerForm({ draft: initial, onClose }: { draft: PlayerDraft; onClose: 
   )
 }
 
-function ImportModal({ parsed, nextOrder, onClose }: { parsed: ParsedImport; nextOrder: number; onClose: () => void }) {
+function ImportModal({ parsed, onClose }: { parsed: ParsedImport; onClose: () => void }) {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
   async function doImport() {
     setBusy(true)
     setError(null)
-    // rows without an auction order go after the existing players, in file order
-    const unordered = parsed.rows.filter((r) => r.auction_order == null)
-    const rows = parsed.rows.map((r) => ({ ...r, auction_order: r.auction_order ?? nextOrder + unordered.indexOf(r) }))
-    const { error } = await supabase.from('players').insert(rows)
+    const { error } = await supabase.from('players').insert(parsed.rows)
     if (error) {
       setError(errorMessage(error))
       setBusy(false)

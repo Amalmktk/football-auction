@@ -125,10 +125,7 @@ export default function Live() {
                 <div className="text-[4.5vw] leading-none font-black">{player.name}</div>
                 <div className="mt-[2vh] flex flex-wrap gap-[1vw] text-[2vw]">
                   {player.position && <Chip>{positionName(player.position)}</Chip>}
-                  {player.rating != null && <Chip>★ {player.rating}/10</Chip>}
-                  {player.category && <Chip>Category {player.category}</Chip>}
                 </div>
-                {player.department && <div className="mt-[2vh] text-[1.8vw] text-slate-400">{player.department}</div>}
                 <div className="mt-[3vh] text-[1.8vw] text-slate-300">
                   Base price <b className="text-white">{fmt(player.base_price)}</b>
                 </div>

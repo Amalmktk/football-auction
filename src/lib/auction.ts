@@ -23,7 +23,7 @@ export function useAuction() {
   const stateQ = useSingleRow<AuctionState>('auction_state')
   const settingsQ = useSingleRow<Settings>('settings')
   const teamsQ = useTable<Team>('teams', 'name')
-  const playersQ = useTable<Player>('players', 'auction_order')
+  const playersQ = useTable<Player>('players', 'name')
 
   const state = stateQ.row
   const settings = settingsQ.row

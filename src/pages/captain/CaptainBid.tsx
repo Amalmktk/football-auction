@@ -111,9 +111,7 @@ function BidScreen({ teamId, onAccessLost }: { teamId: string; onAccessLost: () 
             <div className="min-w-0">
               <div className="truncate text-xl font-bold">{player.name}</div>
               <div className="text-sm text-slate-400">
-                {[player.position, player.rating && `★ ${player.rating}`, player.category && `Cat ${player.category}`]
-                  .filter(Boolean)
-                  .join(' · ')}
+                {player.position ?? ''}
               </div>
               <div className="text-xs text-slate-500">Base {fmt(player.base_price)}</div>
             </div>

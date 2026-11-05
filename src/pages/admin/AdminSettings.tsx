@@ -128,14 +128,8 @@ function SettingsForm({ initial }: { initial: Settings }) {
             <option value="captain">Captain (captains bid on phones)</option>
           </Select>
         </Field>
-        <Field label="Player order" hint="Used by “Next player”.">
-          <Select value={draft.player_order} onChange={(e) => set('player_order', e.target.value as Draft['player_order'])}>
-            <option value="manual">Manual (auction order column)</option>
-            <option value="category">By category (A first), then rating</option>
-            <option value="random">Random</option>
-          </Select>
-        </Field>
       </section>
+      <p className="text-sm text-slate-400">“Next player” picks a random player from those not yet auctioned.</p>
 
       <section className="space-y-3">
         <div>
