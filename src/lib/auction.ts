@@ -9,6 +9,15 @@ export function nextIncrement(bid: number, increments: Increment[]): number {
   return 10
 }
 
+/** Human-readable bid steps, e.g. ["+10 while the bid is below 200", "+20 from 200 upwards"]. */
+export function describeIncrements(increments: Increment[]): string[] {
+  return increments.map((inc, i) => {
+    const from = increments[i - 1]?.upto
+    if (inc.upto == null) return from ? `+${inc.step} from ${from} upwards` : `+${inc.step} on every bid`
+    return from ? `+${inc.step} from ${from} up to ${inc.upto}` : `+${inc.step} while the bid is below ${inc.upto}`
+  })
+}
+
 /** "5/10" when there's a maximum squad size, just "5" when there isn't. */
 export const squadLabel = (count: number, max: number | null | undefined) => (max == null ? `${count}` : `${count}/${max}`)
 

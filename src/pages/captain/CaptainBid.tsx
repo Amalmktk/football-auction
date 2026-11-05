@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Navigate } from 'react-router'
+import RulesModal from '../../components/RulesModal'
 import { Alert, Avatar, Button, ConnectionBadge } from '../../components/ui'
 import { fmt, squadLabel, useAuction } from '../../lib/auction'
 import { errorMessage } from '../../lib/auth'
@@ -22,6 +23,7 @@ function BidScreen({ teamId, onAccessLost }: { teamId: string; onAccessLost: () 
   const now = useServerNow()
   const [busy, setBusy] = useState(false)
   const [flash, setFlash] = useState<{ kind: 'success' | 'error'; text: string } | null>(null)
+  const [showRules, setShowRules] = useState(false)
 
   useEffect(() => {
     if (!flash) return
@@ -187,9 +189,15 @@ function BidScreen({ teamId, onAccessLost }: { teamId: string; onAccessLost: () 
         </ul>
       </section>
 
-      <Button variant="ghost" className="self-center text-xs" onClick={() => void leave()}>
-        Leave team on this phone
-      </Button>
+      <div className="flex justify-center gap-2">
+        <Button variant="secondary" onClick={() => setShowRules(true)}>
+          📋 Rules
+        </Button>
+        <Button variant="ghost" className="text-xs" onClick={() => void leave()}>
+          Leave team on this phone
+        </Button>
+      </div>
+      {showRules && <RulesModal onClose={() => setShowRules(false)} />}
     </div>
   )
 }
