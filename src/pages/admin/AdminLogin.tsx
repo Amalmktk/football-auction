@@ -27,7 +27,7 @@ export default function AdminLogin() {
     const { data: isAdmin } = await supabase.rpc('is_admin')
     if (!isAdmin) {
       await supabase.auth.signOut()
-      setError('This account is not an admin.')
+      setError('Your account is waiting for approval. Ask an existing admin to approve you on the Admins page.')
       setBusy(false)
       return
     }

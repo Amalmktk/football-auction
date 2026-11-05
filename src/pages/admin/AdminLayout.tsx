@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link, Navigate, NavLink, Outlet } from 'react-router'
 import { Button } from '../../components/ui'
 import { useAdminStatus } from '../../lib/auth'
@@ -11,8 +12,24 @@ const nav = [
   { to: '/admin/admins', label: 'Admins' },
 ]
 
+function usePendingRequests(enabled: boolean) {
+  const [count, setCount] = useState(0)
+  useEffect(() => {
+    if (!enabled) return
+    const load = async () => {
+      const { data } = await supabase.rpc('list_admin_requests')
+      setCount(Array.isArray(data) ? data.length : 0)
+    }
+    void load()
+    const id = setInterval(() => void load(), 30000)
+    return () => clearInterval(id)
+  }, [enabled])
+  return count
+}
+
 export default function AdminLayout() {
   const status = useAdminStatus()
+  const pending = usePendingRequests(status === 'admin')
 
   if (status === 'loading') {
     return <div className="flex min-h-screen items-center justify-center text-slate-400">Loading…</div>
@@ -23,14 +40,17 @@ export default function AdminLayout() {
   if (status === 'not-admin') {
     return (
       <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-4 px-4">
-        <h1 className="text-2xl font-bold">Not an admin</h1>
+        <h1 className="text-2xl font-bold">Waiting for approval</h1>
         <p className="text-slate-400">
-          This account is signed in but isn&apos;t marked as an admin. Add a row for it in the{' '}
-          <code>profiles</code> table with <code>role = &apos;admin&apos;</code>.
+          Your account isn&apos;t an admin yet. Ask an existing admin to approve you: they&apos;ll see your request on
+          the <b>Admins</b> page. Then log in again.
         </p>
         <Button variant="secondary" onClick={() => void supabase.auth.signOut()}>
           Sign out
         </Button>
+        <Link to="/" className="text-center text-sm text-slate-400 hover:text-white">
+          ← Home
+        </Link>
       </div>
     )
   }
@@ -52,6 +72,9 @@ export default function AdminLayout() {
                 }
               >
                 {n.label}
+                {n.to === '/admin/admins' && pending > 0 && (
+                  <span className="ml-1.5 rounded-full bg-amber-500 px-1.5 py-0.5 text-xs font-bold text-black">{pending}</span>
+                )}
               </NavLink>
             ))}
           </nav>
