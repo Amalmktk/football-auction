@@ -10,7 +10,7 @@ const links = [
 export default function Home() {
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col justify-center gap-8 px-4 py-10">
-      <h1 className="text-4xl font-bold">Company Football Auction</h1>
+      <h1 className="text-4xl font-bold">Football Auction</h1>
       <nav className="grid gap-4 sm:grid-cols-2">
         {links.map((l) => (
           <Link

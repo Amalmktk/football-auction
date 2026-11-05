@@ -1,6 +1,6 @@
 # Football Auction
 
-Player auction web app for the company football tournament. React (Vite) + TypeScript, Supabase (Postgres, Auth, Realtime), deployed on Vercel.
+Player auction web app for our football tournament. React (Vite) + TypeScript, Supabase (Postgres, Auth, Realtime), deployed on Vercel.
 
 ## Routes
 

@@ -8,7 +8,7 @@ create extension if not exists pgcrypto with schema extensions;
 
 create table settings (
   id int primary key default 1 check (id = 1),                 -- single row
-  tournament_name text not null default 'Company Football Auction',
+  tournament_name text not null default 'Football Auction',
   starting_purse int not null default 1000,
   min_squad int not null default 8,
   max_squad int not null default 10,
