@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Navigate } from 'react-router'
+import { Link, Navigate } from 'react-router'
 import RulesModal from '../../components/RulesModal'
 import { Alert, Avatar, Button, ConnectionBadge } from '../../components/ui'
 import { fmt, squadLabel, useAuction } from '../../lib/auction'
@@ -193,6 +193,12 @@ function BidScreen({ teamId, onAccessLost }: { teamId: string; onAccessLost: () 
         <Button variant="secondary" onClick={() => setShowRules(true)}>
           📋 Rules
         </Button>
+        <Link
+          to="/results"
+          className="inline-flex items-center rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm font-medium hover:bg-slate-700"
+        >
+          👥 All squads
+        </Link>
         <Button variant="ghost" className="text-xs" onClick={() => void leave()}>
           Leave team on this phone
         </Button>
