@@ -3,7 +3,8 @@ import { Avatar, ConnectionBadge } from '../components/ui'
 import { fmt, squadLabel, useAuction } from '../lib/auction'
 import { msLeft, useServerNow } from '../lib/clock'
 import { createAudio, playBid, playSold, playUnsold } from '../lib/sound'
-import type { Team } from '../lib/types'
+import type { Bid, Team } from '../lib/types'
+import { useTable } from '../lib/useTable'
 
 const SOLD_MOMENT_MS = 5000
 const UNSOLD_MOMENT_MS = 3000
@@ -25,7 +26,10 @@ export default function Live() {
   const wakeLock = useRef<WakeLockSentinel | null>(null)
   const [started, setStarted] = useState(false)
 
+  const { rows: bids } = useTable<Bid>('bids', 'id', false)
   const { state, settings, currentPlayer: player, leadingTeam } = a
+  // latest valid bids for the player on the block, newest first
+  const playerBids = player ? bids.filter((b) => b.player_id === player.id && !b.undone) : []
 
   // Fresh SOLD / UNSOLD moments (derived from the server timestamp, so a reload doesn't replay them)
   const sinceUpdate = state ? now - new Date(state.updated_at).getTime() : Infinity
@@ -142,23 +146,54 @@ export default function Live() {
               className="flex w-[40%] flex-col items-center justify-center rounded-[2vw] p-[2vw] transition-colors duration-500"
               style={{ backgroundColor: leadingTeam ? `${leadingTeam.color}33` : 'rgba(255,255,255,0.05)' }}
             >
-              <div className="text-[2vw] tracking-widest text-slate-300 uppercase">
-                {state.status === 'sold' ? 'Sold for' : state.current_bid == null ? 'Opening bid' : 'Current bid'}
+              <div className="text-[1.8vw] tracking-widest text-slate-300 uppercase">
+                {state.status === 'sold' ? 'Sold for' : state.current_bid == null ? 'Opening bid' : 'Highest bid'}
               </div>
-              <div key={state.current_bid ?? 'none'} className="animate-bid text-[10vw] leading-none font-black tabular-nums">
+              <div key={state.current_bid ?? 'none'} className="animate-bid text-[9vw] leading-none font-black tabular-nums">
                 {fmt(state.current_bid ?? player.base_price)}
               </div>
-              <div className="mt-[2vh] flex h-[7vw] items-center gap-[1vw]">
+
+              {/* who holds the highest bid */}
+              <div className="mt-[1.5vh] flex min-h-[7vw] items-center">
                 {leadingTeam ? (
-                  <>
-                    <Avatar name={leadingTeam.short_name} url={leadingTeam.logo_url} color={leadingTeam.color} size={vw(6)} />
-                    <span className="text-[3vw] font-bold">{leadingTeam.name}</span>
-                  </>
+                  <div
+                    key={leadingTeam.id}
+                    className="animate-pop-in flex items-center gap-[1vw] rounded-[1vw] px-[1.5vw] py-[0.8vw] shadow-xl"
+                    style={{ backgroundColor: leadingTeam.color }}
+                  >
+                    <Avatar name={leadingTeam.short_name} url={leadingTeam.logo_url} color={leadingTeam.color} size={vw(5)} />
+                    <span className="text-[3vw] leading-none font-black drop-shadow">{leadingTeam.name}</span>
+                  </div>
                 ) : (
                   state.status === 'bidding' && <span className="text-[2.2vw] text-slate-400">Waiting for the first bid…</span>
                 )}
               </div>
-              {state.status === 'bidding' && timeLeft != null && <CountdownRing msLeft={timeLeft} totalMs={totalMs} />}
+
+              {/* countdown + latest bids */}
+              {state.status === 'bidding' && (
+                <div className="mt-[2vh] flex w-full items-center justify-center gap-[2vw]">
+                  {timeLeft != null && <CountdownRing msLeft={timeLeft} totalMs={totalMs} />}
+                  {playerBids.length > 0 && (
+                    <ol className="min-w-0 flex-1 space-y-[0.6vh] text-[1.5vw]">
+                      {playerBids.slice(0, 4).map((b, i) => {
+                        const t = a.teamById.get(b.team_id)
+                        return (
+                          <li
+                            key={b.id}
+                            className={`flex items-center justify-between gap-[1vw] rounded-[0.6vw] px-[0.8vw] py-[0.3vh] ${i === 0 ? 'bg-white/15 font-bold' : 'text-slate-400'}`}
+                          >
+                            <span className="flex min-w-0 items-center gap-[0.6vw]">
+                              <span className="h-[1vw] w-[1vw] shrink-0 rounded-full" style={{ backgroundColor: t?.color }} />
+                              <span className="truncate">{t?.short_name ?? '?'}</span>
+                            </span>
+                            <span className="tabular-nums">{fmt(b.amount)}</span>
+                          </li>
+                        )
+                      })}
+                    </ol>
+                  )}
+                </div>
+              )}
             </section>
           </>
         ) : (
@@ -314,7 +349,7 @@ function CountdownRing({ msLeft, totalMs }: { msLeft: number; totalMs: number })
   const seconds = Math.ceil(msLeft / 1000)
   const color = seconds === 0 ? '#ef4444' : seconds <= 5 ? '#f59e0b' : '#22c55e'
   return (
-    <div className="relative mt-[3vh] h-[11vw] w-[11vw]">
+    <div className="relative h-[10vw] w-[10vw] shrink-0">
       <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
         <circle cx="50" cy="50" r={r} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="8" />
         <circle

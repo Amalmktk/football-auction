@@ -164,7 +164,7 @@ function BidScreen({ teamId, onAccessLost }: { teamId: string; onAccessLost: () 
           {flash && <Alert kind={flash.kind}>{flash.text}</Alert>}
         </>
       ) : (
-        <Alert kind="info">Bids are taken by the auctioneer: raise your hand to bid.</Alert>
+        <Alert kind="info">Phone bidding is off right now: raise your hand and the auctioneer will enter your bid.</Alert>
       )}
 
       {/* my squad */}

@@ -99,13 +99,13 @@ export default function AdminAuction() {
         </span>
         <span className="text-sm text-slate-400">
           {available.length} available · {unsold.length} unsold ·{' '}
-          {settings.mode === 'captain' ? 'Captain mode' : 'Auctioneer mode'}
+          {settings.mode === 'captain' ? 'Phones + admin bidding' : 'Admin-only bidding'}
         </span>
       </div>
 
       {error && <Alert>{error}</Alert>}
-      {settings.mode === 'captain' && (
-        <Alert kind="info">Captain mode: captains bid from their phones. You can still enter bids for any team here.</Alert>
+      {settings.mode === 'auctioneer' && (
+        <Alert kind="info">Admin-only bidding: phone bidding is off. Tap a team when its captain raises a hand.</Alert>
       )}
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -172,7 +172,8 @@ export default function AdminAuction() {
           {/* team bid buttons */}
           <section>
             <h2 className="mb-2 font-semibold">
-              Bid for a team {a.nextBid != null && <span className="text-slate-400">· next bid {fmt(a.nextBid)}</span>}
+              Bid for a team (captain raised hand){' '}
+              {a.nextBid != null && <span className="text-slate-400">· next bid {fmt(a.nextBid)}</span>}
             </h2>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
               {a.teams.map((t) => {

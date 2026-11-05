@@ -120,12 +120,12 @@ function SettingsForm({ initial }: { initial: Settings }) {
           </div>
         </Field>
         <Field
-          label="Bidding mode"
-          hint="Auctioneer: you tap the team's button. Captain: captains bid from their phones."
+          label="Bidding"
+          hint="Admin can always tap a team's button for captains who raise their hands. Switch to “Admin only” if phones or Wi-Fi give trouble."
         >
           <Select value={draft.mode} onChange={(e) => set('mode', e.target.value as Draft['mode'])}>
-            <option value="auctioneer">Auctioneer (admin enters bids)</option>
-            <option value="captain">Captain (captains bid on phones)</option>
+            <option value="captain">Phones + admin (captains bid on phones or raise hands)</option>
+            <option value="auctioneer">Admin only (captains raise hands)</option>
           </Select>
         </Field>
       </section>
