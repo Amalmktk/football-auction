@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Navigate, useNavigate } from 'react-router'
-import { Alert, Button, Input } from '../../components/ui'
+import { Alert, Button, HomeLink, Input } from '../../components/ui'
 import { errorMessage } from '../../lib/auth'
 import { useCaptainTeam } from '../../lib/captain'
 import { supabase } from '../../lib/supabase'
@@ -36,6 +36,7 @@ export default function CaptainJoin() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 px-4">
+      <HomeLink />
       <div>
         <h1 className="text-3xl font-bold">Captain</h1>
         <p className="mt-2 text-slate-400">Enter the team code you got from the organizers. You only need to do this once.</p>

@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router'
-import { Alert, Button, Field, Input } from '../../components/ui'
+import { Alert, Button, Field, HomeLink, Input } from '../../components/ui'
 import { useAdminStatus } from '../../lib/auth'
 import { supabase } from '../../lib/supabase'
 
@@ -36,6 +36,7 @@ export default function AdminLogin() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 px-4">
+      <HomeLink />
       <h1 className="text-2xl font-bold">Admin login</h1>
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <Field label="Email">

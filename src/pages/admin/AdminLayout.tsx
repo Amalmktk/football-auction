@@ -1,4 +1,4 @@
-import { Navigate, NavLink, Outlet } from 'react-router'
+import { Link, Navigate, NavLink, Outlet } from 'react-router'
 import { Button } from '../../components/ui'
 import { useAdminStatus } from '../../lib/auth'
 import { supabase } from '../../lib/supabase'
@@ -39,7 +39,9 @@ export default function AdminLayout() {
     <div className="min-h-screen">
       <header className="sticky top-0 z-40 border-b border-slate-800 bg-slate-950/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-2 px-4 py-3">
-          <span className="mr-4 font-bold">⚽ Auction admin</span>
+          <Link to="/" className="mr-4 font-bold hover:text-sky-300" title="Home">
+            ⚽ Auction admin
+          </Link>
           <nav className="flex flex-wrap gap-1">
             {nav.map((n) => (
               <NavLink

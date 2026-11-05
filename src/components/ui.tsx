@@ -1,4 +1,14 @@
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from 'react'
+import { Link } from 'react-router'
+
+/** "← Home" link for pages outside the admin area. */
+export function HomeLink() {
+  return (
+    <Link to="/" className="self-start text-sm text-slate-400 hover:text-white">
+      ← Home
+    </Link>
+  )
+}
 
 type Variant = 'primary' | 'secondary' | 'danger' | 'ghost'
 

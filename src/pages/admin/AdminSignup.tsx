@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
-import { Alert, Button, Field, Input } from '../../components/ui'
+import { Alert, Button, Field, HomeLink, Input } from '../../components/ui'
 import { supabase } from '../../lib/supabase'
 
 export default function AdminSignup() {
@@ -32,6 +32,7 @@ export default function AdminSignup() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 px-4">
+      <HomeLink />
       <h1 className="text-2xl font-bold">Admin sign up</h1>
       {done ? (
         <div className="space-y-4">
