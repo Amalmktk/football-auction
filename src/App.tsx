@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router'
 import AdminAuction from './pages/admin/AdminAuction'
+import AdminLayout from './pages/admin/AdminLayout'
 import AdminLogin from './pages/admin/AdminLogin'
 import AdminPlayers from './pages/admin/AdminPlayers'
 import AdminSettings from './pages/admin/AdminSettings'
@@ -15,12 +16,14 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Home />} />
 
-      <Route path="/admin" element={<Navigate to="/admin/auction" replace />} />
       <Route path="/admin/login" element={<AdminLogin />} />
-      <Route path="/admin/settings" element={<AdminSettings />} />
-      <Route path="/admin/teams" element={<AdminTeams />} />
-      <Route path="/admin/players" element={<AdminPlayers />} />
-      <Route path="/admin/auction" element={<AdminAuction />} />
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<Navigate to="/admin/auction" replace />} />
+        <Route path="settings" element={<AdminSettings />} />
+        <Route path="teams" element={<AdminTeams />} />
+        <Route path="players" element={<AdminPlayers />} />
+        <Route path="auction" element={<AdminAuction />} />
+      </Route>
 
       <Route path="/captain" element={<CaptainJoin />} />
       <Route path="/captain/bid" element={<CaptainBid />} />
