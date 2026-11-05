@@ -29,4 +29,5 @@ After running them:
 1. Authentication → enable **anonymous sign-ins** (for captains).
 2. Authentication → Users → create admin user(s), then:
    `insert into profiles (user_id, role) values ('<user uuid>', 'admin');`
-3. Storage → create a public bucket named `photos`.
+
+The functions migration also creates the public `photos` storage bucket (admin-only uploads).
