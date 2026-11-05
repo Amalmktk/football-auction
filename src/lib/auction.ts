@@ -9,7 +9,10 @@ export function nextIncrement(bid: number, increments: Increment[]): number {
   return 10
 }
 
-export const fmt = (n: number | null | undefined) => (n == null ? '—' : n.toLocaleString('en-IN'))
+/** "5/10" when there's a maximum squad size, just "5" when there isn't. */
+export const squadLabel = (count: number, max: number | null | undefined) => (max == null ? `${count}` : `${count}/${max}`)
+
+export const fmt =(n: number | null | undefined) => (n == null ? '—' : n.toLocaleString('en-IN'))
 
 /**
  * Everything a live screen needs: auction state, settings, teams, players (all kept
@@ -63,7 +66,7 @@ export function useAuction() {
       if (state.status !== 'bidding' || nextBid == null) return 'Bidding closed'
       if (timeLeftMs != null && timeLeftMs <= 0) return 'Time is up'
       if (state.leading_team_id === teamId) return 'Leading'
-      if (squadSize(teamId) >= settings.max_squad) return 'Squad full'
+      if (settings.max_squad != null && squadSize(teamId) >= settings.max_squad) return 'Squad full'
       if (nextBid > maxBid(teamId)) return 'Not enough purse'
       return null
     }

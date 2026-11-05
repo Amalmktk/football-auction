@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Alert, Avatar, Button, ConnectionBadge, Select } from '../../components/ui'
-import { fmt, useAuction } from '../../lib/auction'
+import { fmt, squadLabel, useAuction } from '../../lib/auction'
 import { errorMessage } from '../../lib/auth'
 import { msLeft, useServerNow } from '../../lib/clock'
 import { supabase } from '../../lib/supabase'
@@ -201,8 +201,8 @@ export default function AdminAuction() {
                       </span>
                     </div>
                     <div className="mt-1 text-xs text-slate-400">
-                      Purse {fmt(t.purse_remaining)} · Max {fmt(a.maxBid(t.id))} · Squad {a.squadSize(t.id)}/
-                      {settings.max_squad}
+                      Purse {fmt(t.purse_remaining)} · Max {fmt(a.maxBid(t.id))} · Squad{' '}
+                      {squadLabel(a.squadSize(t.id), settings.max_squad)}
                     </div>
                   </button>
                 )
@@ -314,7 +314,7 @@ export default function AdminAuction() {
                       <td className="px-2 py-1.5 text-right tabular-nums">{fmt(t.purse_remaining)}</td>
                       <td className="px-2 py-1.5 text-right tabular-nums">{fmt(a.maxBid(t.id))}</td>
                       <td className="px-4 py-1.5 text-right tabular-nums">
-                        {squad.length}/{settings.max_squad}
+                        {squadLabel(squad.length, settings.max_squad)}
                       </td>
                     </tr>
                   )

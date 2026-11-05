@@ -93,7 +93,7 @@ export default function AdminTeams() {
                 </span>
                 <span>
                   Squad <b>{squadCount(team.id)}</b>
-                  {settings && <span className="text-slate-500"> / {settings.max_squad}</span>}
+                  {settings?.max_squad != null && <span className="text-slate-500"> / {settings.max_squad}</span>}
                 </span>
               </div>
               <div className="mt-4 flex flex-wrap gap-2">

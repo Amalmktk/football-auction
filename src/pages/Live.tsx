@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Avatar, ConnectionBadge } from '../components/ui'
-import { fmt, useAuction } from '../lib/auction'
+import { fmt, squadLabel, useAuction } from '../lib/auction'
 import { msLeft, useServerNow } from '../lib/clock'
 import { createAudio, playBid, playSold, playUnsold } from '../lib/sound'
 import type { Team } from '../lib/types'
@@ -272,7 +272,9 @@ function BetweenPlayers({ status, a }: { status: string; a: ReturnType<typeof us
           <b>{fmt(settings.starting_purse)}</b>
           <div>👥 Squad size</div>
           <b>
-            {settings.min_squad} to {settings.max_squad} players
+            {settings.max_squad == null
+              ? `At least ${settings.min_squad} players`
+              : `${settings.min_squad} to ${settings.max_squad} players`}
           </b>
           <div>⏱️ Bid timer</div>
           <b>{settings.bid_timer_seconds} seconds, resets on every bid</b>
@@ -293,7 +295,7 @@ function BetweenPlayers({ status, a }: { status: string; a: ReturnType<typeof us
   )
 }
 
-function TeamTile({ team, squad, max, leading }: { team: Team; squad: number; max: number; leading: boolean }) {
+function TeamTile({ team, squad, max, leading }: { team: Team; squad: number; max: number | null; leading: boolean }) {
   return (
     <div
       className={`min-w-0 flex-1 rounded-[0.8vw] border-t-[0.5vh] bg-white/5 px-[0.8vw] py-[1vh] transition ${leading ? 'scale-105 bg-white/15' : ''}`}
@@ -302,7 +304,7 @@ function TeamTile({ team, squad, max, leading }: { team: Team; squad: number; ma
       <div className="truncate text-[1.3vw] font-bold">{team.short_name}</div>
       <div className="text-[1.8vw] leading-tight font-black tabular-nums">{fmt(team.purse_remaining)}</div>
       <div className="text-[1vw] text-slate-400">
-        {squad}/{max} players
+        {squadLabel(squad, max)} players
       </div>
     </div>
   )

@@ -33,7 +33,8 @@ function SettingsForm({ initial }: { initial: Settings }) {
   function validate(d: Draft): string | null {
     if (!d.tournament_name.trim()) return 'Tournament name is required.'
     if (d.starting_purse <= 0) return 'Starting purse must be positive.'
-    if (d.min_squad < 1 || d.max_squad < d.min_squad) return 'Squad size: minimum must be at least 1 and not above the maximum.'
+    if (d.min_squad < 1) return 'Minimum squad size must be at least 1.'
+    if (d.max_squad != null && d.max_squad < d.min_squad) return 'Maximum squad size can’t be below the minimum.'
     if (d.bid_timer_seconds < 5) return 'Bid timer must be at least 5 seconds.'
     if (d.increments.length === 0) return 'Add at least one bid increment.'
     for (let i = 0; i < d.increments.length; i++) {
@@ -98,8 +99,25 @@ function SettingsForm({ initial }: { initial: Settings }) {
         <Field label="Minimum squad size" hint="Including the captain.">
           <Input type="number" min={1} value={draft.min_squad} onChange={(e) => set('min_squad', num(e.target.value))} />
         </Field>
-        <Field label="Maximum squad size" hint="A full team can't bid.">
-          <Input type="number" min={1} value={draft.max_squad} onChange={(e) => set('max_squad', num(e.target.value))} />
+        <Field label="Maximum squad size" hint="Optional. A team that reaches it can't bid any more.">
+          <div className="flex items-center gap-3">
+            <Input
+              type="number"
+              min={1}
+              disabled={draft.max_squad == null}
+              placeholder="No limit"
+              value={draft.max_squad ?? ''}
+              onChange={(e) => set('max_squad', num(e.target.value))}
+            />
+            <label className="flex shrink-0 items-center gap-2 text-slate-300">
+              <input
+                type="checkbox"
+                checked={draft.max_squad == null}
+                onChange={(e) => set('max_squad', e.target.checked ? null : Math.max(draft.min_squad, 10))}
+              />
+              No maximum
+            </label>
+          </div>
         </Field>
         <Field
           label="Bidding mode"

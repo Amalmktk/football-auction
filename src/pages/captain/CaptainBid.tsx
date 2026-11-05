@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Navigate } from 'react-router'
 import { Alert, Avatar, Button, ConnectionBadge } from '../../components/ui'
-import { fmt, useAuction } from '../../lib/auction'
+import { fmt, squadLabel, useAuction } from '../../lib/auction'
 import { errorMessage } from '../../lib/auth'
 import { useCaptainTeam } from '../../lib/captain'
 import { msLeft, useServerNow } from '../../lib/clock'
@@ -91,7 +91,7 @@ function BidScreen({ teamId, onAccessLost }: { teamId: string; onAccessLost: () 
         <div className="min-w-0 flex-1">
           <div className="truncate font-bold">{team.name}</div>
           <div className="text-xs text-slate-300">
-            Squad {squad.length}/{settings.max_squad} (min {settings.min_squad})
+            Squad {squadLabel(squad.length, settings.max_squad)} (min {settings.min_squad})
           </div>
         </div>
         <div className="text-right">

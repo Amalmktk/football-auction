@@ -14,7 +14,7 @@ export interface Settings {
   tournament_name: string
   starting_purse: number
   min_squad: number
-  max_squad: number
+  max_squad: number | null // null = no maximum
   bid_timer_seconds: number
   mode: BiddingMode
   increments: Increment[]
