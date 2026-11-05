@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Navigate, useNavigate } from 'react-router'
+import { Link, Navigate, useNavigate } from 'react-router'
 import { Alert, Button, Field, Input } from '../../components/ui'
 import { useAdminStatus } from '../../lib/auth'
 import { supabase } from '../../lib/supabase'
@@ -54,6 +54,9 @@ export default function AdminLogin() {
         <Button type="submit" disabled={busy}>
           {busy ? 'Signing in…' : 'Sign in'}
         </Button>
+        <Link to="/admin/signup" className="text-center text-sm text-sky-400 hover:underline">
+          New organizer? Sign up, then ask an admin to add you
+        </Link>
       </form>
     </main>
   )

@@ -8,6 +8,7 @@ const nav = [
   { to: '/admin/teams', label: 'Teams' },
   { to: '/admin/players', label: 'Players' },
   { to: '/admin/settings', label: 'Settings' },
+  { to: '/admin/admins', label: 'Admins' },
 ]
 
 export default function AdminLayout() {
