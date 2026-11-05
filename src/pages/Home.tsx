@@ -1,16 +1,23 @@
 import { Link } from 'react-router'
+import type { Settings } from '../lib/types'
+import { useSingleRow } from '../lib/useTable'
 
 const links = [
-  { to: '/live', label: 'Live display', hint: 'For the TV' },
-  { to: '/results', label: 'Results', hint: 'Final squads' },
-  { to: '/captain', label: 'Captain join', hint: 'Enter your team code' },
-  { to: '/admin/login', label: 'Admin', hint: 'Organizers only' },
+  { to: '/live', label: 'Live auction', hint: 'Big-screen display' },
+  { to: '/results', label: 'Squads', hint: 'Teams and players bought' },
+  { to: '/captain', label: 'Captains', hint: 'Join with your team code and bid' },
+  { to: '/admin/login', label: 'Organizers', hint: 'Run the auction' },
 ]
 
 export default function Home() {
+  const { row: settings } = useSingleRow<Settings>('settings')
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col justify-center gap-8 px-4 py-10">
-      <h1 className="text-4xl font-bold">Football Auction</h1>
+      <div>
+        <div className="text-5xl">⚽</div>
+        <h1 className="mt-2 text-4xl font-bold">{settings?.tournament_name ?? 'Football Auction'}</h1>
+        <p className="mt-2 text-slate-400">Player auction</p>
+      </div>
       <nav className="grid gap-4 sm:grid-cols-2">
         {links.map((l) => (
           <Link

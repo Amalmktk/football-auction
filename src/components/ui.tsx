@@ -112,6 +112,17 @@ export function Avatar({
   )
 }
 
+/** Small badge shown while the live connection is down. */
+export function ConnectionBadge({ connected }: { connected: boolean }) {
+  if (connected) return null
+  return (
+    <div className="fixed top-3 right-3 z-[60] flex items-center gap-2 rounded-full bg-amber-500 px-3 py-1 text-sm font-semibold text-black shadow-lg">
+      <span className="h-2 w-2 animate-pulse rounded-full bg-black" />
+      Reconnecting…
+    </div>
+  )
+}
+
 export function PageHeader({ title, children }: { title: string; children?: ReactNode }) {
   return (
     <div className="mb-6 flex flex-wrap items-center justify-between gap-3">

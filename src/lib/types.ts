@@ -45,6 +45,7 @@ export interface Player {
   team_id: string | null
   sold_price: number | null
   auction_order: number | null
+  sold_at: string | null
 }
 
 export interface AuctionState {

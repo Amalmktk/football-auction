@@ -40,7 +40,13 @@ export function useTable<T>(table: string, orderBy?: string, ascending = true) {
           setConnected(false)
         }
       })
+    // phones and laptops that slept may have missed changes: refresh when the page is visible again
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void reload()
+    }
+    document.addEventListener('visibilitychange', onVisible)
     return () => {
+      document.removeEventListener('visibilitychange', onVisible)
       void supabase.removeChannel(channel)
     }
   }, [table, reload])

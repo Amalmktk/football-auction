@@ -9,3 +9,77 @@ body,
 body {
   @apply bg-slate-950 text-slate-100 antialiased;
 }
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-10vh) rotate(0deg);
+  }
+  100% {
+    transform: translateY(110vh) rotate(720deg);
+  }
+}
+
+@keyframes pop-in {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes bid-flash {
+  0% {
+    transform: scale(1.12);
+    color: #fde047;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes stamp {
+  0% {
+    transform: rotate(-12deg) scale(2);
+    opacity: 0;
+  }
+  100% {
+    transform: rotate(-12deg) scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-pop-in {
+  animation: pop-in 500ms ease-out both;
+}
+
+.animate-bid {
+  animation: bid-flash 600ms ease-out;
+}
+
+.animate-stamp {
+  animation: stamp 400ms ease-out both;
+}
+
+.confetti {
+  position: absolute;
+  top: 0;
+  width: 0.9vw;
+  height: 1.6vw;
+  animation: confetti-fall linear forwards;
+}
+
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
