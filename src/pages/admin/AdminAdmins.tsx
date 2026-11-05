@@ -23,6 +23,8 @@ export default function AdminAdmins() {
   }, [])
 
   useEffect(() => {
+    // load() only sets state after the network request returns, so this is a normal fetch-on-mount
+    // oxlint-disable-next-line react/set-state-in-effect
     void load()
   }, [load])
 
