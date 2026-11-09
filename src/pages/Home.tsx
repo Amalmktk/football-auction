@@ -23,12 +23,20 @@ export default function Home() {
           <h1 className="mt-2 text-4xl font-bold">{settings?.tournament_name ?? 'Football Auction'}</h1>
           <p className="mt-2 text-slate-400">Player auction</p>
         </div>
-        <button
-          onClick={() => setShowRules(true)}
-          className="rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 font-medium hover:border-sky-500"
-        >
-          📋 Rules
-        </button>
+        <div className="flex gap-2">
+          <Link
+            to="/guide"
+            className="rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 font-medium hover:border-sky-500"
+          >
+            📖 How it works
+          </Link>
+          <button
+            onClick={() => setShowRules(true)}
+            className="rounded-lg border border-slate-700 bg-slate-900 px-4 py-2 font-medium hover:border-sky-500"
+          >
+            📋 Rules
+          </button>
+        </div>
       </div>
       <nav className="grid gap-4 sm:grid-cols-2">
         {links.map((l) => (

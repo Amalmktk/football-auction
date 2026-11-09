@@ -15,6 +15,7 @@ const CaptainJoin = lazy(() => import('./pages/captain/CaptainJoin'))
 const CaptainBid = lazy(() => import('./pages/captain/CaptainBid'))
 const Live = lazy(() => import('./pages/Live'))
 const Results = lazy(() => import('./pages/Results'))
+const Guide = lazy(() => import('./pages/Guide'))
 
 export default function App() {
   return (
@@ -38,6 +39,7 @@ export default function App() {
 
         <Route path="/live" element={<Live />} />
         <Route path="/results" element={<Results />} />
+        <Route path="/guide" element={<Guide />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
