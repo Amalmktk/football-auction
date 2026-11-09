@@ -1,10 +1,10 @@
 import { useMemo, useRef, useState, type FormEvent } from 'react'
-import { Alert, Avatar, Button, Field, Input, Modal, PageHeader, Select } from '../../components/ui'
+import { Alert, Avatar, Button, Field, Input, Modal, PageHeader } from '../../components/ui'
 import { errorMessage } from '../../lib/auth'
 import { CSV_TEMPLATE, DEFAULT_BASE_PRICE, parsePlayersCsv, type ParsedImport } from '../../lib/csv'
 import { uploadPhoto } from '../../lib/storage'
 import { supabase } from '../../lib/supabase'
-import { POSITIONS, type Player, type PlayerStatus, type Position, type Team } from '../../lib/types'
+import type { Player, PlayerStatus, Team } from '../../lib/types'
 import { useTable } from '../../lib/useTable'
 
 type Filter = 'all' | PlayerStatus
@@ -20,7 +20,6 @@ interface PlayerDraft {
   id?: string
   is_captain: boolean
   name: string
-  position: Position | ''
   base_price: string
   photo_url: string | null
 }
@@ -28,7 +27,6 @@ interface PlayerDraft {
 const emptyDraft: PlayerDraft = {
   is_captain: false,
   name: '',
-  position: '',
   base_price: String(DEFAULT_BASE_PRICE),
   photo_url: null,
 }
@@ -38,7 +36,6 @@ function toDraft(p: Player): PlayerDraft {
     id: p.id,
     is_captain: p.is_captain,
     name: p.name,
-    position: p.position ?? '',
     base_price: p.base_price.toString(),
     photo_url: p.photo_url,
   }
@@ -152,7 +149,6 @@ export default function AdminPlayers() {
             <thead className="bg-slate-900 text-slate-400">
               <tr>
                 <th className="px-3 py-2">Player</th>
-                <th className="px-3 py-2">Pos</th>
                 <th className="px-3 py-2">Base</th>
                 <th className="px-3 py-2">Status</th>
                 <th className="px-3 py-2">Team / price</th>
@@ -175,7 +171,6 @@ export default function AdminPlayers() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-3 py-2">{p.position ?? '—'}</td>
                     <td className="px-3 py-2">{p.is_captain ? '—' : p.base_price}</td>
                     <td className="px-3 py-2">
                       <span className={`rounded px-2 py-0.5 text-xs ${statusStyles[p.status]}`}>
@@ -231,7 +226,6 @@ function PlayerForm({ draft: initial, onClose }: { draft: PlayerDraft; onClose: 
     try {
       const photo_url = photoFile ? await uploadPhoto(photoFile, 'players') : draft.photo_url
       const fields = {
-        position: draft.position || null,
         photo_url,
         // name and base price don't apply to captains (name is managed on the Teams page)
         ...(draft.is_captain ? {} : { name: draft.name.trim(), base_price: Number(draft.base_price) }),
@@ -256,16 +250,6 @@ function PlayerForm({ draft: initial, onClose }: { draft: PlayerDraft; onClose: 
               <Input required disabled={draft.is_captain} value={draft.name} onChange={(e) => set({ name: e.target.value })} />
             </Field>
           </div>
-          <Field label="Position">
-            <Select value={draft.position} onChange={(e) => set({ position: e.target.value as Position | '' })}>
-              <option value="">—</option>
-              {POSITIONS.map((p) => (
-                <option key={p} value={p}>
-                  {p}
-                </option>
-              ))}
-            </Select>
-          </Field>
           {!draft.is_captain && (
             <Field label="Base price">
               <Input
@@ -340,7 +324,7 @@ function ImportModal({ parsed, onClose }: { parsed: ParsedImport; onClose: () =>
           <ul className="max-h-48 overflow-y-auto rounded-lg bg-slate-800 px-3 py-2 text-sm text-slate-300">
             {parsed.rows.map((r, i) => (
               <li key={i}>
-                {r.name} · {r.position ?? '—'} · {r.base_price}
+                {r.name} · {r.base_price}
               </li>
             ))}
           </ul>

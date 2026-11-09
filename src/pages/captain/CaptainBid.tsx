@@ -112,9 +112,6 @@ function BidScreen({ teamId, onAccessLost }: { teamId: string; onAccessLost: () 
             <Avatar name={player.name} url={player.photo_url} size={64} />
             <div className="min-w-0">
               <div className="truncate text-xl font-bold">{player.name}</div>
-              <div className="text-sm text-slate-400">
-                {player.position ?? ''}
-              </div>
               <div className="text-xs text-slate-500">Base {fmt(player.base_price)}</div>
             </div>
           </div>
@@ -181,7 +178,6 @@ function BidScreen({ teamId, onAccessLost }: { teamId: string; onAccessLost: () 
                 <span>
                   {p.name}
                   {p.is_captain && <span className="ml-2 text-xs text-sky-400">Captain</span>}
-                  {p.position && <span className="ml-2 text-xs text-slate-500">{p.position}</span>}
                 </span>
                 <span className="tabular-nums text-slate-400">{p.is_captain ? '—' : fmt(p.sold_price)}</span>
               </li>

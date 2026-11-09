@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Avatar, ConnectionBadge } from '../components/ui'
 import { fmt, squadLabel, useAuction } from '../lib/auction'
 import { msLeft, useServerNow } from '../lib/clock'
@@ -127,9 +127,6 @@ export default function Live() {
               </div>
               <div className="min-w-0">
                 <div className="text-[4.5vw] leading-none font-black">{player.name}</div>
-                <div className="mt-[2vh] flex flex-wrap gap-[1vw] text-[2vw]">
-                  {player.position && <Chip>{positionName(player.position)}</Chip>}
-                </div>
                 <div className="mt-[3vh] text-[1.8vw] text-slate-300">
                   Base price <b className="text-white">{fmt(player.base_price)}</b>
                 </div>
@@ -383,10 +380,6 @@ function Stamp({ color, children }: { color: string; children: string }) {
   )
 }
 
-function Chip({ children }: { children: ReactNode }) {
-  return <span className="rounded-full bg-white/10 px-[1.2vw] py-[0.4vh]">{children}</span>
-}
-
 function initials(name: string) {
   return name
     .split(/\s+/)
@@ -394,10 +387,6 @@ function initials(name: string) {
     .slice(0, 2)
     .map((w) => w[0]?.toUpperCase())
     .join('')
-}
-
-function positionName(p: string) {
-  return { GK: 'Goalkeeper', DEF: 'Defender', MID: 'Midfielder', FWD: 'Forward' }[p] ?? p
 }
 
 /** Pixel size from viewport width, for components that take a numeric size. */

@@ -117,7 +117,6 @@ export default function AdminAuction() {
                 <Avatar name={player.name} url={player.photo_url} size={112} />
                 <div className="min-w-0 flex-1">
                   <div className="text-3xl font-bold">{player.name}</div>
-                  {player.position && <div className="mt-1 text-slate-400">{player.position}</div>}
                   <div className="mt-1 text-sm text-slate-500">Base price {fmt(player.base_price)}</div>
                 </div>
                 <div className="text-right">
@@ -253,7 +252,7 @@ export default function AdminAuction() {
                   <optgroup label="Available">
                     {available.map((p) => (
                       <option key={p.id} value={p.id}>
-                        {p.name} · {p.position ?? '—'} · base {p.base_price}
+                        {p.name} · base {p.base_price}
                       </option>
                     ))}
                   </optgroup>
@@ -262,7 +261,7 @@ export default function AdminAuction() {
                   <optgroup label="Unsold (re-auction)">
                     {unsold.map((p) => (
                       <option key={p.id} value={p.id}>
-                        {p.name} · {p.position ?? '—'} · base {p.base_price}
+                        {p.name} · base {p.base_price}
                       </option>
                     ))}
                   </optgroup>
@@ -298,15 +297,12 @@ export default function AdminAuction() {
               <tbody>
                 {a.teams.map((t) => {
                   const squad = a.squads.get(t.id) ?? []
-                  const noGk = squad.length >= settings.min_squad - 1 && !squad.some((p) => p.position === 'GK')
                   return (
                     <tr key={t.id} className="border-t border-slate-800">
                       <td className="px-4 py-1.5">
                         <span className="flex items-center gap-2">
                           <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: t.color }} />
-                          {t.short_name}
-                          {noGk && <span className="text-xs text-amber-400" title="No goalkeeper yet">no GK</span>}
-                        </span>
+                          {t.short_name}                        </span>
                       </td>
                       <td className="px-2 py-1.5 text-right tabular-nums">{fmt(t.purse_remaining)}</td>
                       <td className="px-2 py-1.5 text-right tabular-nums">{fmt(a.maxBid(t.id))}</td>

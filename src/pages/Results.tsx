@@ -17,7 +17,6 @@ export default function Results() {
         team: t.name,
         player: p.name,
         captain: p.is_captain ? 'yes' : '',
-        position: p.position ?? '',
         price: p.is_captain ? 0 : (p.sold_price ?? ''),
         team_purse_remaining: t.purse_remaining,
       })),
@@ -27,7 +26,6 @@ export default function Results() {
         team: '(unsold)',
         player: p.name,
         captain: '',
-        position: p.position ?? '',
         price: '',
         team_purse_remaining: 0,
       }),
@@ -92,7 +90,6 @@ export default function Results() {
                     <span>
                       {p.name}
                       {p.is_captain && <span className="ml-2 text-xs text-sky-400">C</span>}
-                      {p.position && <span className="ml-2 text-xs text-slate-500">{p.position}</span>}
                     </span>
                     <span className="tabular-nums">{p.is_captain ? '—' : fmt(p.sold_price)}</span>
                   </li>
