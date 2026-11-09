@@ -26,7 +26,11 @@ export default function AdminTeams() {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
-  const squadCount = (teamId: string) => players.filter((p) => p.team_id === teamId).length
+  /** Captain first, then bought players in the order they were bought. */
+  const squadOf = (teamId: string) =>
+    players
+      .filter((p) => p.team_id === teamId)
+      .sort((a, b) => Number(b.is_captain) - Number(a.is_captain) || (a.sold_at ?? '').localeCompare(b.sold_at ?? ''))
 
   async function generateCodes(targets: Team[]) {
     const what = targets.length === 1 ? `a new join code for ${targets[0].name}` : `new join codes for all ${targets.length} teams`
@@ -75,8 +79,10 @@ export default function AdminTeams() {
         <p className="text-slate-400">No teams yet. Add one to get started.</p>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {teams.map((team) => (
-            <div key={team.id} className="rounded-xl border border-slate-800 bg-slate-900 p-4">
+          {teams.map((team) => {
+            const squad = squadOf(team.id)
+            return (
+            <div key={team.id} className="flex flex-col rounded-xl border border-slate-800 bg-slate-900 p-4">
               <div className="flex items-center gap-3">
                 <Avatar name={team.short_name} url={team.logo_url} color={team.color} size={48} />
                 <div className="min-w-0">
@@ -92,11 +98,25 @@ export default function AdminTeams() {
                   Purse <b>{team.purse_remaining}</b>
                 </span>
                 <span>
-                  Squad <b>{squadCount(team.id)}</b>
+                  Squad <b>{squad.length}</b>
                   {settings?.max_squad != null && <span className="text-slate-500"> / {settings.max_squad}</span>}
                 </span>
               </div>
-              <div className="mt-4 flex flex-wrap gap-2">
+              <ul className="mt-3 divide-y divide-slate-800 rounded-lg border border-slate-800 text-sm">
+                {squad.map((p) => (
+                  <li key={p.id} className="flex items-center gap-2 px-3 py-1.5">
+                    <Avatar name={p.name} url={p.photo_url} size={24} />
+                    <span className="min-w-0 flex-1 truncate">{p.name}</span>
+                    {p.is_captain ? (
+                      <span className="rounded bg-sky-900 px-1.5 py-0.5 text-xs text-sky-200">Captain</span>
+                    ) : (
+                      <span className="tabular-nums text-slate-400">{p.sold_price ?? '—'}</span>
+                    )}
+                  </li>
+                ))}
+                {squad.length === 0 && <li className="px-3 py-1.5 text-slate-500">No players yet</li>}
+              </ul>
+              <div className="mt-auto flex flex-wrap gap-2 pt-4">
                 <Button
                   variant="secondary"
                   onClick={() =>
@@ -120,7 +140,8 @@ export default function AdminTeams() {
                 </Button>
               </div>
             </div>
-          ))}
+            )
+          })}
         </div>
       )}
 
