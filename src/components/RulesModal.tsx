@@ -81,6 +81,11 @@ export default function RulesModal({ onClose }: { onClose: () => void }) {
                 )}
               </li>
               {s.max_squad != null && <li>A team with {s.max_squad} players is full and can’t bid any more.</li>}
+              <li>
+                Every team must be able to reach {s.min_squad} players. A team can’t bid if winning that player would
+                leave too few players for the other teams to reach the minimum. The extra spots go to whoever wins them
+                first.
+              </li>
               <li>Unsold players come back in a re-auction round after everyone has been offered.</li>
             </ul>
           </Section>

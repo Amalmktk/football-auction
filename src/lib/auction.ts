@@ -68,6 +68,19 @@ export function useAuction() {
       return t.purse_remaining - Math.max(settings.min_squad - squadSize(teamId) - 1, 0) * minBase
     }
 
+    /**
+     * Would winning the player on the block leave too few players in the pool for every
+     * team (this one included) to still reach min_squad? Mirrors the check in place_bid.
+     */
+    const wouldStarveOthers = (teamId: string) => {
+      if (!settings) return false
+      const need = teams.reduce((sum, t) => {
+        const size = squadSize(t.id) + (t.id === teamId ? 1 : 0)
+        return sum + Math.max(settings.min_squad - size, 0)
+      }, 0)
+      return need > pool.length
+    }
+
     /** Why this team can't bid right now, or null if it can. */
     const bidBlocker = (teamId: string, timeLeftMs: number | null): string | null => {
       if (!state || !settings) return 'Loading'
@@ -76,6 +89,7 @@ export function useAuction() {
       if (timeLeftMs != null && timeLeftMs <= 0) return 'Time is up'
       if (state.leading_team_id === teamId) return 'Leading'
       if (settings.max_squad != null && squadSize(teamId) >= settings.max_squad) return 'Squad full'
+      if (wouldStarveOthers(teamId)) return 'Other teams still need players'
       if (nextBid > maxBid(teamId)) return 'Not enough purse'
       return null
     }
