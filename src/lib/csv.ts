@@ -1,4 +1,39 @@
 import Papa from 'papaparse'
+import type { Player, Team } from './types'
+
+/** Download rows as a CSV file. */
+export function downloadCsv(filename: string, rows: Record<string, string | number | null>[]) {
+  const url = URL.createObjectURL(new Blob([Papa.unparse(rows)], { type: 'text/csv' }))
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+const statusLabel: Record<Player['status'], string> = {
+  available: 'Not auctioned yet',
+  on_block: 'Up for bidding',
+  sold: 'Sold',
+  unsold: 'Unsold',
+}
+
+/** Every player with base price, status, team and price. Captains first, then by name. */
+export function downloadPlayersCsv(players: Player[], teams: Team[]) {
+  const teamName = new Map(teams.map((t) => [t.id, t.name]))
+  const rows = players
+    .slice()
+    .sort((a, b) => Number(b.is_captain) - Number(a.is_captain) || a.name.localeCompare(b.name))
+    .map((p) => ({
+      name: p.name,
+      role: p.is_captain ? 'Captain' : 'Player',
+      base_price: p.is_captain ? null : p.base_price,
+      status: p.is_captain ? 'Captain' : statusLabel[p.status],
+      team: p.team_id ? (teamName.get(p.team_id) ?? '') : '',
+      sold_price: p.is_captain ? null : p.sold_price,
+    }))
+  downloadCsv('players.csv', rows)
+}
 
 export interface PlayerImportRow {
   name: string

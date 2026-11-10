@@ -1,7 +1,7 @@
-import Papa from 'papaparse'
 import { Link } from 'react-router'
 import { Avatar, Button, ConnectionBadge } from '../components/ui'
 import { fmt, useAuction } from '../lib/auction'
+import { downloadCsv } from '../lib/csv'
 
 export default function Results() {
   const a = useAuction()
@@ -30,12 +30,7 @@ export default function Results() {
         team_purse_remaining: 0,
       }),
     )
-    const url = URL.createObjectURL(new Blob([Papa.unparse(rows)], { type: 'text/csv' }))
-    const link = document.createElement('a')
-    link.href = url
-    link.download = 'auction-results.csv'
-    link.click()
-    URL.revokeObjectURL(url)
+    downloadCsv('auction-results.csv', rows)
   }
 
   return (

@@ -4,6 +4,7 @@ import RulesModal from '../../components/RulesModal'
 import { Alert, Avatar, Button, ConnectionBadge } from '../../components/ui'
 import { fmt, squadLabel, useAuction } from '../../lib/auction'
 import { errorMessage } from '../../lib/auth'
+import { downloadPlayersCsv } from '../../lib/csv'
 import { useCaptainTeam } from '../../lib/captain'
 import { msLeft, useServerNow } from '../../lib/clock'
 import { supabase } from '../../lib/supabase'
@@ -185,7 +186,10 @@ function BidScreen({ teamId, onAccessLost }: { teamId: string; onAccessLost: () 
         </ul>
       </section>
 
-      <div className="flex justify-center gap-2">
+      <div className="flex flex-wrap justify-center gap-2">
+        <Button variant="secondary" onClick={() => downloadPlayersCsv(a.players, a.teams)}>
+          ⬇ Player list
+        </Button>
         <Button variant="secondary" onClick={() => setShowRules(true)}>
           📋 Rules
         </Button>

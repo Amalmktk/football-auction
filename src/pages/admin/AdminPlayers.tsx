@@ -1,7 +1,13 @@
 import { useMemo, useRef, useState, type FormEvent } from 'react'
 import { Alert, Avatar, Button, Field, Input, Modal, PageHeader } from '../../components/ui'
 import { errorMessage } from '../../lib/auth'
-import { CSV_TEMPLATE, DEFAULT_BASE_PRICE, parsePlayersCsv, type ParsedImport } from '../../lib/csv'
+import {
+  CSV_TEMPLATE,
+  DEFAULT_BASE_PRICE,
+  downloadPlayersCsv,
+  parsePlayersCsv,
+  type ParsedImport,
+} from '../../lib/csv'
 import { uploadPhoto } from '../../lib/storage'
 import { supabase } from '../../lib/supabase'
 import type { Player, PlayerStatus, Team } from '../../lib/types'
@@ -101,6 +107,9 @@ export default function AdminPlayers() {
   return (
     <div>
       <PageHeader title="Players">
+        <Button variant="secondary" disabled={players.length === 0} onClick={() => downloadPlayersCsv(players, teams)}>
+          ⬇ Download list
+        </Button>
         <Button variant="ghost" onClick={downloadTemplate}>
           CSV template
         </Button>
