@@ -20,7 +20,7 @@ export default function Home() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <div className="text-5xl">⚽</div>
-          <h1 className="mt-2 text-4xl font-bold">{settings?.tournament_name ?? 'Football Auction'}</h1>
+          <h1 className="mt-2 text-4xl font-bold">{settings?.tournament_name ?? 'EPL 2.0'}</h1>
           <p className="mt-2 text-slate-400">Player auction</p>
         </div>
         <div className="flex gap-2">
