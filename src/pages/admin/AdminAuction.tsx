@@ -367,6 +367,31 @@ export default function AdminAuction() {
             )}
           </section>
 
+          {state.status !== 'finished' && (
+            <section className="rounded-xl border border-slate-800 p-4">
+              <h2 className="font-semibold">Finish</h2>
+              <p className="mt-1 mb-3 text-sm text-slate-400">
+                End the auction even if players are left over (e.g. every squad is complete and nobody wants the
+                rest). Screens then show “Auction complete”.
+              </p>
+              <Button
+                variant="secondary"
+                disabled={busy || isBidding || isPaused}
+                onClick={() =>
+                  void run(
+                    'finish_auction',
+                    undefined,
+                    a.pool.length > 0
+                      ? `Finish the auction with ${a.pool.length} player(s) still unsold?`
+                      : 'Finish the auction?',
+                  )
+                }
+              >
+                Finish auction…
+              </Button>
+            </section>
+          )}
+
           <section className="rounded-xl border border-red-900/60 p-4">
             <h2 className="font-semibold text-red-300">Reset</h2>
             <p className="mt-1 mb-3 text-sm text-slate-400">

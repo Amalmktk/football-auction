@@ -101,7 +101,7 @@ export function useAuction() {
       if (settings.max_squad != null && squadSize(teamId) >= settings.max_squad) return 'Squad full'
       const check = reserveCheck(teamId)
       if (check.othersShort) return 'Other teams still need players'
-      if (nextBid > check.maxBid) return 'Not enough purse'
+      if (nextBid > check.maxBid) return 'Over max bid'
       return null
     }
 

@@ -121,8 +121,12 @@ export default function Guide() {
             <b>Put a specific player up</b> lets you choose the next player instead of picking at random.
           </li>
           <li>
-            A team button shows why that team can’t bid (e.g. <i>Squad full</i>, <i>Not enough purse</i>,{' '}
+            A team button shows why that team can’t bid (e.g. <i>Squad full</i>, <i>Over max bid</i>,{' '}
             <i>Other teams still need players</i>).
+          </li>
+          <li>
+            <b>Finish auction…</b> ends the auction when every squad is complete but players are left over, so the
+            screens show “Auction complete”.
           </li>
           <li>
             <b>Reset auction…</b> clears all sales and bids. Use it after a practice run, never during the real auction.
@@ -180,7 +184,8 @@ export default function Guide() {
         </Faq>
         <Faq q="My Bid button is greyed out. Why?">
           The button says why: you are already leading, the timer ran out, the auction is paused, your squad is full,
-          you don’t have enough points, or the other teams still need the remaining players.
+          the bid is over your max bid (you must keep enough points to fill the rest of your squad), or the other
+          teams still need the remaining players.
         </Faq>
         <Faq q="The join code doesn’t work.">
           Check for typos (it isn’t case sensitive). If the organizers made a new code, the old one stops working and
