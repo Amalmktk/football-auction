@@ -69,8 +69,9 @@ export default function RulesModal({ onClose }: { onClose: () => void }) {
             <ul className="list-disc space-y-1 pl-5">
               <li>Captains are already in their teams, at no cost.</li>
               <li>
-                A team must always keep enough points to complete its minimum squad of {s.min_squad} at the lowest base
-                price. Its <b>maximum bid</b> is shown live on the console and the captain’s phone.
+                A team must always keep enough points to complete its minimum squad of {s.min_squad} by buying the
+                cheapest players still left at their base price. Its <b>maximum bid</b> is shown live on the console and
+                the captain’s phone.
                 {minBase != null && needAfterCaptain > 0 && (
                   <span className="text-slate-400">
                     {' '}

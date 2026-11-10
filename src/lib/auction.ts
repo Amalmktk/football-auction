@@ -46,7 +46,7 @@ export function useAuction() {
 
     // players still to be auctioned (the one on the block is excluded, as in the database)
     const pool = players.filter((p) => p.status === 'available' || p.status === 'unsold')
-    const minBase = pool.length ? Math.min(...pool.map((p) => p.base_price)) : 0
+    const poolPrices = pool.map((p) => p.base_price).sort((x, y) => x - y)
 
     const currentPlayer = state?.current_player_id ? players.find((p) => p.id === state.current_player_id) : undefined
     const leadingTeam = state?.leading_team_id ? teamById.get(state.leading_team_id) : undefined
@@ -61,25 +61,35 @@ export function useAuction() {
 
     const squadSize = (teamId: string) => squads.get(teamId)?.length ?? 0
 
-    /** max_bid = purse_remaining − (min_squad − current_squad − 1) × lowest_base_price */
-    const maxBid = (teamId: string) => {
-      const t = teamById.get(teamId)
-      if (!t || !settings) return 0
-      return t.purse_remaining - Math.max(settings.min_squad - squadSize(teamId) - 1, 0) * minBase
+    /**
+     * Squad-completion check if `teamId` wins the player on the block. Mirrors bid_check() in the database.
+     *
+     * After the sale every team must still be able to reach min_squad. The players that will fill those
+     * slots are the N cheapest left in the pool (N = all teams' remaining slots). Each team must be able to
+     * afford its own slots even if it ends up with the most expensive of those N: that way, whoever buys
+     * what, nobody can be squeezed out.
+     *
+     *   maxBid       = this team's purse − its worst-case cost for its remaining slots
+     *   othersShort  = another team could no longer complete its squad (not enough players or points)
+     */
+    const reserveCheck = (teamId: string) => {
+      if (!settings) return { maxBid: 0, othersShort: true }
+      const needOf = (id: string) => Math.max(settings.min_squad - squadSize(id) - (id === teamId ? 1 : 0), 0)
+      const total = teams.reduce((sum, t) => sum + needOf(t.id), 0)
+      if (total > poolPrices.length) return { maxBid: 0, othersShort: true }
+      const fillers = poolPrices.slice(0, total) // ascending
+      const worstCost = (n: number) => fillers.slice(fillers.length - n).reduce((sum, x) => sum + x, 0)
+      let maxBid = 0
+      let othersShort = false
+      for (const t of teams) {
+        const worst = worstCost(needOf(t.id))
+        if (t.id === teamId) maxBid = t.purse_remaining - worst
+        else if (t.purse_remaining < worst) othersShort = true
+      }
+      return { maxBid, othersShort }
     }
 
-    /**
-     * Would winning the player on the block leave too few players in the pool for every
-     * team (this one included) to still reach min_squad? Mirrors the check in place_bid.
-     */
-    const wouldStarveOthers = (teamId: string) => {
-      if (!settings) return false
-      const need = teams.reduce((sum, t) => {
-        const size = squadSize(t.id) + (t.id === teamId ? 1 : 0)
-        return sum + Math.max(settings.min_squad - size, 0)
-      }, 0)
-      return need > pool.length
-    }
+    const maxBid = (teamId: string) => reserveCheck(teamId).maxBid
 
     /** Why this team can't bid right now, or null if it can. */
     const bidBlocker = (teamId: string, timeLeftMs: number | null): string | null => {
@@ -89,8 +99,9 @@ export function useAuction() {
       if (timeLeftMs != null && timeLeftMs <= 0) return 'Time is up'
       if (state.leading_team_id === teamId) return 'Leading'
       if (settings.max_squad != null && squadSize(teamId) >= settings.max_squad) return 'Squad full'
-      if (wouldStarveOthers(teamId)) return 'Other teams still need players'
-      if (nextBid > maxBid(teamId)) return 'Not enough purse'
+      const check = reserveCheck(teamId)
+      if (check.othersShort) return 'Other teams still need players'
+      if (nextBid > check.maxBid) return 'Not enough purse'
       return null
     }
 
