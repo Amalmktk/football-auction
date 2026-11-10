@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { Alert, Button, Field, Input, PageHeader, Select } from '../../components/ui'
 import { errorMessage } from '../../lib/auth'
 import { supabase } from '../../lib/supabase'
@@ -15,11 +15,45 @@ export default function AdminSettings() {
   return <SettingsForm initial={row} />
 }
 
+/**
+ * Can every team complete its minimum squad with this purse, whatever happens? Uses the same
+ * worst case as the bidding rule (see reserveCheck in lib/auction.ts): each team must afford its
+ * remaining slots even with the most expensive of the cheapest players needed league-wide.
+ * Returns a message if not, or null. Too few players is allowed (more can be added later).
+ */
+async function budgetProblem(d: Draft): Promise<string | null> {
+  const [teamsRes, playersRes] = await Promise.all([
+    supabase.from('teams').select('id'),
+    supabase.from('players').select('team_id, status, base_price, is_captain'),
+  ])
+  if (teamsRes.error) throw teamsRes.error
+  if (playersRes.error) throw playersRes.error
+  const players = playersRes.data
+  const prices = players
+    .filter((p) => !p.is_captain && (p.status === 'available' || p.status === 'unsold'))
+    .map((p) => p.base_price as number)
+    .sort((x, y) => x - y)
+  const needs = teamsRes.data.map(
+    (t) => Math.max(d.min_squad - players.filter((p) => p.team_id === t.id).length, 0),
+  )
+  const total = needs.reduce((s, n) => s + n, 0)
+  if (total === 0 || total > prices.length) return null
+  const fillers = prices.slice(0, total)
+  const biggestNeed = Math.max(...needs)
+  const worst = fillers.slice(fillers.length - biggestNeed).reduce((s, x) => s + x, 0)
+  if (d.starting_purse < worst) {
+    return `Purse too small: with these base prices a team may need up to ${worst.toLocaleString('en-IN')} points to fill its ${biggestNeed} remaining squad places, so nobody could bid. Raise the purse to at least ${worst.toLocaleString('en-IN')} or lower base prices.`
+  }
+  return null
+}
+
 function SettingsForm({ initial }: { initial: Settings }) {
   const [draft, setDraft] = useState<Draft>(() => {
     const { id: _id, ...rest } = initial
     return rest
   })
+  // last saved values, to tell which fields this save changes
+  const saved = useRef<Draft>(draft)
   const [message, setMessage] = useState<{ kind: 'error' | 'success'; text: string } | null>(null)
   const [busy, setBusy] = useState(false)
 
@@ -59,9 +93,55 @@ function SettingsForm({ initial }: { initial: Settings }) {
     const invalid = validate(d)
     if (invalid) return setMessage({ kind: 'error', text: invalid })
     setBusy(true)
-    const { error } = await supabase.from('settings').update(d).eq('id', 1)
-    setBusy(false)
-    setMessage(error ? { kind: 'error', text: errorMessage(error) } : { kind: 'success', text: 'Settings saved.' })
+    try {
+      const prev = saved.current
+      const moneyChanged =
+        d.starting_purse !== prev.starting_purse || d.min_squad !== prev.min_squad || d.max_squad !== prev.max_squad
+
+      if (moneyChanged) {
+        // Purse and squad sizes are only safe to change before anyone is bought:
+        // changing them mid-auction could leave a team unable to complete its squad.
+        const [soldRes, stateRes] = await Promise.all([
+          supabase.from('players').select('id', { count: 'exact', head: true }).eq('status', 'sold').eq('is_captain', false),
+          supabase.from('auction_state').select('status').eq('id', 1).single(),
+        ])
+        if (soldRes.error) throw soldRes.error
+        if (stateRes.error) throw stateRes.error
+        if ((soldRes.count ?? 0) > 0 || ['bidding', 'paused'].includes(stateRes.data.status)) {
+          setMessage({
+            kind: 'error',
+            text: 'Players have already been bought or are up for bidding, so the purse and squad sizes are locked. Use “Reset auction…” on the Auction console first, then change them.',
+          })
+          return
+        }
+      }
+
+      if (moneyChanged) {
+        const problem = await budgetProblem(d)
+        if (problem) {
+          setMessage({ kind: 'error', text: problem })
+          return
+        }
+      }
+
+      const { error } = await supabase.from('settings').update(d).eq('id', 1)
+      if (error) throw error
+
+      // nobody bought yet: give every team the new purse straight away
+      if (d.starting_purse !== prev.starting_purse) {
+        const { error: purseError } = await supabase
+          .from('teams')
+          .update({ purse_remaining: d.starting_purse })
+          .not('id', 'is', null)
+        if (purseError) throw purseError
+      }
+      saved.current = d
+      setMessage({ kind: 'success', text: 'Settings saved.' })
+    } catch (err) {
+      setMessage({ kind: 'error', text: errorMessage(err) })
+    } finally {
+      setBusy(false)
+    }
   }
 
   const num = (v: string) => (v === '' ? 0 : Number(v))
@@ -84,7 +164,7 @@ function SettingsForm({ initial }: { initial: Settings }) {
         </div>
         <Field
           label="Starting purse per team (points)"
-          hint="Team purses are set from this when a team is created, and when the auction is reset."
+          hint="Saving applies it to every team. Locked once players are bought (reset the auction to change it)."
         >
           <Input type="number" min={1} value={draft.starting_purse} onChange={(e) => set('starting_purse', num(e.target.value))} />
         </Field>
