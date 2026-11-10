@@ -10,8 +10,8 @@ import {
 } from '../../lib/csv'
 import { uploadPhoto } from '../../lib/storage'
 import { supabase } from '../../lib/supabase'
-import type { Player, PlayerStatus, Team } from '../../lib/types'
-import { useTable } from '../../lib/useTable'
+import type { Player, PlayerStatus, Settings, Team } from '../../lib/types'
+import { useSingleRow, useTable } from '../../lib/useTable'
 
 type Filter = 'all' | PlayerStatus
 
@@ -50,6 +50,7 @@ function toDraft(p: Player): PlayerDraft {
 export default function AdminPlayers() {
   const { rows: players, error: loadError } = useTable<Player>('players', 'name')
   const { rows: teams } = useTable<Team>('teams', 'name')
+  const { row: settings } = useSingleRow<Settings>('settings')
   const [filter, setFilter] = useState<Filter>('all')
   const [search, setSearch] = useState('')
   const [editing, setEditing] = useState<PlayerDraft | null>(null)
@@ -58,6 +59,10 @@ export default function AdminPlayers() {
   const fileInput = useRef<HTMLInputElement>(null)
 
   const teamById = useMemo(() => new Map(teams.map((t) => [t.id, t])), [teams])
+
+  // Once anyone has been bought (or someone is on the block), base prices are part of the
+  // purse maths, so they're locked until the auction is reset.
+  const started = players.some((p) => !p.is_captain && (p.status === 'sold' || p.status === 'on_block'))
 
   const counts = useMemo(() => {
     const c: Record<Filter, number> = { all: players.length, available: 0, on_block: 0, sold: 0, unsold: 0 }
@@ -83,7 +88,19 @@ export default function AdminPlayers() {
   }
 
   async function removePlayer(p: Player) {
-    if (!confirm(`Delete ${p.name}?`)) return
+    let question = `Delete ${p.name}?`
+    if (settings && (p.status === 'available' || p.status === 'unsold')) {
+      // would the remaining pool still be enough for every team to reach the minimum squad?
+      const poolAfter = players.filter((x) => x.status === 'available' || x.status === 'unsold').length - 1
+      const need = teams.reduce(
+        (sum, t) => sum + Math.max(settings.min_squad - players.filter((x) => x.team_id === t.id).length, 0),
+        0,
+      )
+      if (poolAfter < need) {
+        question = `Delete ${p.name}?\n\nWARNING: only ${poolAfter} players would be left for ${need} open squad places, so NOBODY could bid. If you go ahead, lower the minimum squad size in Settings.`
+      }
+    }
+    if (!confirm(question)) return
     setError(null)
     const { error } = await supabase.from('players').delete().eq('id', p.id)
     if (error) {
@@ -215,13 +232,21 @@ export default function AdminPlayers() {
         </div>
       )}
 
-      {editing && <PlayerForm draft={editing} onClose={() => setEditing(null)} />}
+      {editing && <PlayerForm draft={editing} priceLocked={started} onClose={() => setEditing(null)} />}
       {importing && <ImportModal parsed={importing} onClose={() => setImporting(null)} />}
     </div>
   )
 }
 
-function PlayerForm({ draft: initial, onClose }: { draft: PlayerDraft; onClose: () => void }) {
+function PlayerForm({
+  draft: initial,
+  priceLocked,
+  onClose,
+}: {
+  draft: PlayerDraft
+  priceLocked: boolean
+  onClose: () => void
+}) {
   const [draft, setDraft] = useState(initial)
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -237,7 +262,9 @@ function PlayerForm({ draft: initial, onClose }: { draft: PlayerDraft; onClose: 
       const fields = {
         photo_url,
         // name and base price don't apply to captains (name is managed on the Teams page)
-        ...(draft.is_captain ? {} : { name: draft.name.trim(), base_price: Number(draft.base_price) }),
+        ...(draft.is_captain ? {} : { name: draft.name.trim() }),
+        // base price is frozen for existing players once the auction has started
+        ...(draft.is_captain || (priceLocked && draft.id) ? {} : { base_price: Number(draft.base_price) }),
       }
       const { error } = draft.id
         ? await supabase.from('players').update(fields).eq('id', draft.id)
@@ -260,9 +287,13 @@ function PlayerForm({ draft: initial, onClose }: { draft: PlayerDraft; onClose: 
             </Field>
           </div>
           {!draft.is_captain && (
-            <Field label="Base price">
+            <Field
+              label="Base price"
+              hint={priceLocked && draft.id ? 'Locked: the auction has started. Reset the auction to change it.' : undefined}
+            >
               <Input
                 required
+                disabled={priceLocked && !!draft.id}
                 type="number"
                 min={1}
                 value={draft.base_price}

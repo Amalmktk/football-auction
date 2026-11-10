@@ -97,23 +97,29 @@ function SettingsForm({ initial }: { initial: Settings }) {
       const prev = saved.current
       const moneyChanged =
         d.starting_purse !== prev.starting_purse || d.min_squad !== prev.min_squad || d.max_squad !== prev.max_squad
+      // Changes that could strand a team mid-auction. Lowering the minimum or raising the
+      // maximum only loosens the rules, so those stay allowed (e.g. when players don't turn up).
+      const unsafeChange =
+        d.starting_purse !== prev.starting_purse ||
+        d.min_squad > prev.min_squad ||
+        (d.max_squad != null && (prev.max_squad == null || d.max_squad < prev.max_squad))
 
+      let started = false
       if (moneyChanged) {
-        // Purse and squad sizes are only safe to change before anyone is bought:
-        // changing them mid-auction could leave a team unable to complete its squad.
         const [soldRes, stateRes] = await Promise.all([
           supabase.from('players').select('id', { count: 'exact', head: true }).eq('status', 'sold').eq('is_captain', false),
           supabase.from('auction_state').select('status').eq('id', 1).single(),
         ])
         if (soldRes.error) throw soldRes.error
         if (stateRes.error) throw stateRes.error
-        if ((soldRes.count ?? 0) > 0 || ['bidding', 'paused'].includes(stateRes.data.status)) {
-          setMessage({
-            kind: 'error',
-            text: 'Players have already been bought or are up for bidding, so the purse and squad sizes are locked. Use “Reset auction…” on the Auction console first, then change them.',
-          })
-          return
-        }
+        started = (soldRes.count ?? 0) > 0 || ['bidding', 'paused'].includes(stateRes.data.status)
+      }
+      if (started && unsafeChange) {
+        setMessage({
+          kind: 'error',
+          text: 'The auction has started, so the purse can’t change, the minimum squad can’t go up and the maximum can’t go down. Lowering the minimum or raising the maximum is still allowed. For anything else, use “Reset auction…” on the Auction console first.',
+        })
+        return
       }
 
       if (moneyChanged) {
@@ -128,7 +134,7 @@ function SettingsForm({ initial }: { initial: Settings }) {
       if (error) throw error
 
       // nobody bought yet: give every team the new purse straight away
-      if (d.starting_purse !== prev.starting_purse) {
+      if (d.starting_purse !== prev.starting_purse && !started) {
         const { error: purseError } = await supabase
           .from('teams')
           .update({ purse_remaining: d.starting_purse })
@@ -176,7 +182,7 @@ function SettingsForm({ initial }: { initial: Settings }) {
             onChange={(e) => set('bid_timer_seconds', num(e.target.value))}
           />
         </Field>
-        <Field label="Minimum squad size" hint="Including the captain.">
+        <Field label="Minimum squad size" hint="Including the captain. Can be lowered during the auction (e.g. if players don’t turn up), not raised.">
           <Input type="number" min={1} value={draft.min_squad} onChange={(e) => set('min_squad', num(e.target.value))} />
         </Field>
         <Field label="Maximum squad size" hint="Optional. A team that reaches it can't bid any more.">
